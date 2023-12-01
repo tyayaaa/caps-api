@@ -17,13 +17,8 @@ app.set('trust proxy', true)
 // Set view engine
 app.set('view engine', 'ejs')
 
-//=============PATH====================================================================================================
 app.use('/', routes)
 
-
-
-//     const userLocation = req.body.userLocation;
-//=================================================================================================================
 app.listen(port, () => {
     console.log(`running at http://localhost:${port}`)
 })
