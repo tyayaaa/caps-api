@@ -2,7 +2,7 @@
 const { initializeApp } = require('@firebase/app');
 const { getAuth } = require('@firebase/auth');
 const admin = require('firebase-admin')
-const credentials = require("./serviceAccountKey.json");
+const credentials = require("../serviceAccountKey.json");
 
 const firebaseConfig = {
     apiKey: "AIzaSyCmcqjitIX64-9rw9LvWtKXsaOeeTvIw_I",
