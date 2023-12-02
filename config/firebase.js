@@ -21,4 +21,4 @@ admin.initializeApp({
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-module.exports = { app, auth, firebaseConfig };
+module.exports = { app, auth };

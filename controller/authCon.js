@@ -1,9 +1,8 @@
-const { getAuth, signInWithEmailAndPassword, signOut } = require('@firebase/auth');
-const firebaseConfig = require('../config/firebase');
 const admin = require('firebase-admin')
-const verifyToken = require('../config/verifyToken')
-
-const userAuth = getAuth();
+const { verifyToken } = require('../middleware/auth-middleware')
+const { getAuth, signInWithEmailAndPassword } = require('@firebase/auth');
+const { app, auth } = require('../config/firebase')
+const jwt = require('jsonwebtoken')
 
 //===============================================================
 
@@ -19,9 +18,7 @@ const signUp = async (req, res) => {
         const userRecord = await admin.auth().createUser({
             displayName: user.username,
             email: user.email,
-            password: user.password,
-            emailVerified: false,
-            disabled: false
+            password: user.password
         });
 
         // Mengirim respons dengan informasi pengguna termasuk providerData
@@ -35,21 +32,30 @@ const signUp = async (req, res) => {
 //belom jalan
 const signIn = async (req, res) => {
     try {
+        console.log(req.body);
         const user = {
             email: req.body.email,
             password: req.body.password
         }
 
-        // Melakukan sign in dengan Firebase Authentication
-        const signInResponse = await admin.auth().signInWithEmailAndPassword(user.email, user.password);
+        // Check if email is provided
+        if (!user.email || !user.password) {
+            return res.status(400).json({ error: 'All field is required' });
+        }
 
-        // Mendapatkan informasi tambahan tentang pengguna, termasuk providerData
-        const detailedUserRecord = await admin.auth().getUser(signInResponse.user.uid);
+        // Sign in with Firebase Authentication
+        const userCredential = await signInWithEmailAndPassword(auth, user.email, user.password);
 
-        // Mengirim respons dengan informasi pengguna termasuk providerData
-        res.json(detailedUserRecord);
+        // Get additional user information if needed
+        const userRecord = userCredential.user;
+
+        // Create a JWT token
+        const token = jwt.sign({ id: userRecord.uid }, process.env.SECRET_KEY)
+
+        // Send response with user information and token
+        res.status(200).json({ message: "Login successful", user: userRecord, token });
     } catch (error) {
-        console.error('Error signing in user:', error);
+        console.error('Error logging in user:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }

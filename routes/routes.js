@@ -1,7 +1,8 @@
 const express = require('express')
-const verifyToken = require('../config/verifyToken')
 const {signUp, signIn} = require('../controller/authCon')
 const {place, placeByName, detailPlace, popularPlace} = require('../controller/placeCon')
+const { checkIfAuthenticated } = require('../middleware/auth-middleware')
+
 
 const route = express.Router()
 //=================================================================================================================
