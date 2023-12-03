@@ -1,19 +1,21 @@
 const express = require('express')
-const {signUp, signIn} = require('../controller/authCon')
+const {signUp, signIn, signOut} = require('../controller/authCon')
 const {place, placeByName, detailPlace, popularPlace} = require('../controller/placeCon')
-const { checkIfAuthenticated } = require('../middleware/auth-middleware')
+const { verifyToken } = require('../middleware/auth-middleware')
 
 
 const route = express.Router()
 //=================================================================================================================
 route.post('/signup', signUp)
 route.post('/signin', signIn)
-//route.post('/signout', signOut)
+route.post('/signOut', signOut)
+
+//route user profile
 
 //nanti tambahin verify token
-route.get('/place', place)
-route.get('/search/:place_name', placeByName)
-route.get('/place/:place_id', detailPlace)
-route.get('/popular', popularPlace)
+route.get('/place', verifyToken, place)
+route.get('/search/:place_name', verifyToken, placeByName)
+route.get('/place/:place_id', verifyToken, detailPlace)
+route.get('/popular', verifyToken, popularPlace)
 
 module.exports = route;

@@ -1,11 +1,11 @@
 const admin = require('firebase-admin')
-const { verifyToken } = require('../middleware/auth-middleware')
-const { getAuth, signInWithEmailAndPassword } = require('@firebase/auth');
-const { app, auth } = require('../config/firebase')
+const { verifyToken } = require('../middleware/auth-middleware') //buat user profile
+const { signInWithEmailAndPassword } = require('@firebase/auth');
+const { auth } = require('../config/firebase')
 const jwt = require('jsonwebtoken')
 
+//need attention: body pake format x-www-urlencoded. kalo pake raw providernya jd anonymous jd gabisa login
 //===============================================================
-
 const signUp = async (req, res) => {
     try {
         const user = {
@@ -53,12 +53,27 @@ const signIn = async (req, res) => {
         const token = jwt.sign({ id: userRecord.uid }, process.env.SECRET_KEY)
 
         // Send response with user information and token
-        res.status(200).json({ message: "Login successful", user: userRecord, token });
+        res.status(200).json({ message: "Sign In successful", user: userRecord, token });
     } catch (error) {
         console.error('Error logging in user:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
 
+// Logout function
+const signOut = async (req, res) => {
+    try {
+        // Sign out the user
+        await auth.signOut();
 
-module.exports = {signUp, signIn}
+        // Respond with a success message
+        res.status(200).json({ message: 'Sign Out successful' });
+    } catch (error) {
+        console.error('Error logging out user:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+
+
+module.exports = {signUp, signIn, signOut}
