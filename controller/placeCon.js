@@ -1,7 +1,7 @@
 const connection = require('../config/database')
 
 //========================================================================================================
-//get all place
+//Get All Place
 const place = (req, res) => {
     connection.query(
         'SELECT * FROM Place_destination',
@@ -15,7 +15,7 @@ const place = (req, res) => {
     )
 }
 
-//get place by name
+//Get Place By Name
 const placeByName = (req, res) => {
     const placeName = req.params.place_name;
 
@@ -33,7 +33,7 @@ const placeByName = (req, res) => {
 }
 
 
-//get place detail
+//Get Detail Place
 const detailPlace = (req, res) => {
     const placeId = req.params.place_id;
 
@@ -51,8 +51,8 @@ const detailPlace = (req, res) => {
 }
 
 
-//get popular place
-//nanti ganti sama popularity based recommendation ml(?)
+//Get Popular Place
+//nanti ganti sama popularity based recommendation
 const popularPlace = (req, res) => {
     connection.query(
         'SELECT * FROM Place_destination WHERE rating > 4.5',

@@ -1,5 +1,5 @@
 const express = require('express')
-const {signUp, signIn, signOut} = require('../controller/authCon')
+const {signUp, signIn, signOut, getUserProfile} = require('../controller/authCon')
 const {place, placeByName, detailPlace, popularPlace} = require('../controller/placeCon')
 const { verifyToken } = require('../middleware/auth-middleware')
 
@@ -11,6 +11,7 @@ route.post('/signin', signIn)
 route.post('/signOut', signOut)
 
 //route user profile
+route.get('/profile', verifyToken, getUserProfile)
 
 //nanti tambahin verify token
 route.get('/place', verifyToken, place)
@@ -18,4 +19,4 @@ route.get('/search/:place_name', verifyToken, placeByName)
 route.get('/place/:place_id', verifyToken, detailPlace)
 route.get('/popular', verifyToken, popularPlace)
 
-module.exports = route;
+module.exports = route
