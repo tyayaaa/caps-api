@@ -2,30 +2,58 @@ const admin = require('firebase-admin')
 const { signInWithEmailAndPassword } = require('@firebase/auth')
 const { auth } = require('../config/firebase')
 const jwt = require('jsonwebtoken')
+const nodemailer = require('nodemailer')
 
 //need attention: body pake format x-www-urlencoded. kalo pake raw providernya jd anonymous jd gabisa login
 //================================================================================================================
 const signUp = async (req, res) => {
     try {
-        const user = {
-            username: req.body.username,
-            email: req.body.email,
-            password: req.body.password
-        }
+        const { displayName, email, password } = req.body;
 
-        // Create user
         const userRecord = await admin.auth().createUser({
-            displayName: user.username,
-            email: user.email,
-            password: user.password
+            displayName,
+            email,
+            password,
         })
 
-        res.json(userRecord)
+        const verificationLink = await admin.auth().generateEmailVerificationLink(email);
+
+        var transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            auth: {
+                user: "waytogojabar@gmail.com",
+                pass: "dwnzsmmoyqnjesjt"
+            }
+        });
+
+        const name = userRecord.displayName
+        const mailOptions = {
+            from: "waytogo@gmail.com",
+            to: email,
+            subject: "Verify Your Email",
+            html: 
+            `<p> Hello ${name}, Welcome to WayToGo! </p>
+            <p> Please verify your email by click the following link: <a href="${verificationLink}">${verificationLink}</a>.</p>
+            <p> If you did not request verification for this address, you can ignore this email.</p>
+            <p> Thank you, </p>
+            <p> Your WayToGo team. </p>`,
+        }
+    
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+            console.error("Error sending email:", error);
+            res.status(500).json("Error sending email.");
+            } else {
+            console.log("Email sent:", info.response);
+            res.status(200).json({ message: "Sign Up successful. Please check your email.", user: userRecord });
+            }
+        });
     } catch (error) {
-        console.error('Error creating user:', error)
-        res.status(500).json({ error: 'Internal Server Error' })
+        console.error(error);
+        res.status(500).json("Sign Up failed.");
     }
-}
+};
+
 
 //Sign In function
 const signIn = async (req, res) => {
@@ -40,11 +68,12 @@ const signIn = async (req, res) => {
             return res.status(400).json({ error: 'All field is required' })
         }
 
-        // Sign in with Firebase Authentication
         const userCredential = await signInWithEmailAndPassword(auth, user.email, user.password)
-
-        // Get additional user information if needed
         const userRecord = userCredential.user
+
+        if (!userRecord.emailVerified) {
+        return res.status(401).json({ error: 'Email not verified. Please check your email for verification instructions.' });
+        }
 
         // Create a JWT token
         const token = jwt.sign({ id: userRecord.uid }, process.env.SECRET_KEY)
@@ -84,7 +113,7 @@ const getUserProfile = async (req, res) => {
         const userProfile = {
             uid: userRecord.uid,
             email: userRecord.email,
-            displayName: userRecord.displayName,
+            displayName: userRecord.displayName
         }
 
         res.status(200).json({ user: userProfile })
